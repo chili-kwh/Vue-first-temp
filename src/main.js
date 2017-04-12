@@ -1,7 +1,14 @@
-import Vue from "vue"
+/**
+ * Created on 17/4/12.
+ */
 
+import Vue from "vue";
+import todo from "./components/todo.vue"
 
 new Vue({
   el: "#app",
-  components: {}
+  template: "<todo></todo>",
+  components: {
+    todo
+  }
 });

@@ -1,56 +1,83 @@
 <template>
-  <section class="todoapp">
-    <header class="header">
-      <h1>todos</h1>
-      <input class="new-todo"
-             autofocus autocomplete="off"
-             placeholder="What needs to be done?"
-             v-model="newTodo"
-             @keyup.enter="addTodo">
-    </header>
-    <section class="main" v-show="todos.length" v-cloak>
-      <input class="toggle-all" type="checkbox" v-model="allDone">
-      <ul class="todo-list">
-        <li v-for="todo in filteredTodos"
-            class="todo"
-            :key="todo.id"
-            :class="{ completed: todo.completed, editing: todo == editedTodo }">
-          <div class="view">
-            <input class="toggle" type="checkbox" v-model="todo.completed">
-            <label @dblclick="editTodo(todo)">{{ todo.title }}</label>
-            <button class="destroy" @click="removeTodo(todo)"></button>
-          </div>
-          <input class="edit" type="text"
-                 v-model="todo.title"
-                 v-todo-focus="todo == editedTodo"
-                 @blur="doneEdit(todo)"
-                 @keyup.enter="doneEdit(todo)"
-                 @keyup.esc="cancelEdit(todo)">
-        </li>
-      </ul>
-    </section>
-    <footer class="footer" v-show="todos.length" v-cloak>
-    <span class="todo-count">
-      <strong>{{ remaining }}</strong> {{ remaining | pluralize }} left
-    </span>
-      <ul class="filters">
-        <li><a href="#/all" :class="{ selected: visibility == 'all' }">All</a></li>
-        <li><a href="#/active" :class="{ selected: visibility == 'active' }">Active</a></li>
-        <li><a href="#/completed" :class="{ selected: visibility == 'completed' }">Completed</a></li>
-      </ul>
-      <button class="clear-completed" @click="removeCompleted" v-show="todos.length > remaining">
-        Clear completed
-      </button>
-    </footer>
-  </section>
-  <footer class="info">
-    <p>Double-click to edit a todo</p>
-    <p>Written by <a href="http://evanyou.me">Evan You</a></p>
-    <p>Part of <a href="http://todomvc.com">TodoMVC</a></p>
-  </footer>
+  <div>
+    <div>todo</div>
+    <input type="text" placeholder="type your todo" v-model="inputs"
+           @keyup.enter="addTodo"
+
+    >
+    <ul>
+      <li v-for="(elem, idx) in todos">
+          <input type="checkbox" v-model="elem.isFinished">
+          <label @click="toggleTodo(elem)" :class="{disable: elem.isFinished}">{{elem.name}}</label>
+          <span @click="deleteTodo(elem, idx)" class="delete">delete</span>
+      </li>
+    </ul>
+  </div>
 </template>
 
 <script>
-
-
+  const LSkey = "todo";
+  export default {
+    name: "todo",
+    data() {
+      return {
+        todos: [],
+        inputs: ""
+      }
+    },
+    mounted(){
+      this.fetch();
+    },
+    watch: {
+      todos: {
+        handler(){
+          this.save();
+        },
+        deep: true
+      }
+    },
+    methods: {
+      save(){
+        localStorage.setItem(LSkey, JSON.stringify(this.todos));
+      },
+      fetch(){
+        this.todos = JSON.parse(localStorage.getItem(LSkey));
+      },
+      toggleTodo(elem) {
+        elem.isFinished = !elem.isFinished;
+      },
+      deleteTodo(elem, idx){
+        this.todos.splice(idx, 1);
+      },
+      addTodo(e) {
+        //箭头函数体内的this对象，就是定义时所在的对象，而不是使用时所在的对象。???
+        console.log(this);
+        console.log(this.inputs);
+        this.todos.push({name: this.inputs, isFinished: false});
+        this.inputs = "";
+      },
+    }
+  }
 </script>
+
+<style>
+  li{
+    width: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  label{
+    flex: 1;
+    margin: 0 20px;
+  }
+  .disable {
+    text-decoration: line-through;
+  }
+  .delete{
+    text-align: right;
+    color: red;
+    font-size: 11px;
+    cursor: pointer;
+  }
+</style>
